@@ -1,1 +1,53 @@
+on:
+  # push:
+  #   branches:
+  #     - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install jq
+      run: sudo apt-get install -y jq
+
+    - name: Get Azure AD Token
+      run: |
+        client_id="<YOUR_AZURE_CLIENT_ID>"
+        client_secret="<YOUR_AZURE_CLIENT_SECRET>"
+        tenant_id="<YOUR_AZURE_TENANT_ID>"
+
+        token_response=$(curl -X POST -H "Content-Type: application/x-www-form-urlencoded" \
+          -d "client_id=$client_id" \
+          -d "client_secret=$client_secret" \
+          -d "grant_type=client_credentials" \
+          -d "resource=https://analysis.windows.net/powerbi/api" \
+          -d "tenant_id=$tenant_id" \
+          "https://login.microsoftonline.com/$tenant_id/oauth2/token")
+        
+        access_token=$(echo $token_response | jq -r .access_token)
+        echo "ACCESS_TOKEN=$access_token" >> $GITHUB_ENV
+
+    - name: Deploy myorder.pbix file to Power BI
+      env:
+        ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
+      run: |
+        workspace_id="<YOUR_POWERBI_WORKSPACE_ID>"
+        pbix_file="myorder.pbix"
+        
+        if [ ! -f "$pbix_file" ]; then
+          echo "File $pbix_file not found in the repository."
+          exit 1
+        fi
+
+        response=$(curl -X POST \
+          -H "Content-Type: multipart/form-data" \
+          -H "Authorization: Bearer $ACCESS_TOKEN" \
+          -F "file=@$pbix_file" \
+          "https://api.powerbi.com/v1.0/myorg/groups/$workspace_id/imports?datasetDisplayName=$(basename $pbix_file .pbix)")
+
+        echo "Response: $response"
 
