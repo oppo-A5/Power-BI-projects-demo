@@ -14,9 +14,9 @@ jobs:
 
     - name: Get Azure AD Token
       run: |
-        client_id="<YOUR_AZURE_CLIENT_ID>"
-        client_secret="<YOUR_AZURE_CLIENT_SECRET>"
-        tenant_id="<YOUR_AZURE_TENANT_ID>"
+        client_id="af02d383-a72d-4b2d-9519-704f817ed5e7"
+        client_secret="6Hh8Q~usokJ10r~NV5ONR5r3Fc82jr8ehXhovdhS"
+        tenant_id="3602d7b3-f70d-4cd9-8fe2-a377a01e73c4"
 
         token_response=$(curl -X POST -H "Content-Type: application/x-www-form-urlencoded" \
           -d "client_id=$client_id" \
@@ -33,8 +33,8 @@ jobs:
       env:
         ACCESS_TOKEN: ${{ env.ACCESS_TOKEN }}
       run: |
-        workspace_id="<YOUR_POWERBI_WORKSPACE_ID>"
-        pbix_file="myorder.pbix"
+        workspace_id="45a44d4e-604a-41e9-a91b-95d30259c627"
+        pbix_file="Project Management/Project Management.pbix"
         
         if [ ! -f "$pbix_file" ]; then
           echo "File $pbix_file not found in the repository."
